@@ -1,0 +1,40 @@
+module main
+{
+  define valid_node(s : integer) : boolean =
+    (s >= 1 && s <= 10);
+  
+      
+  procedure next_nodes (prevNode1 : integer, prevNode2 : integer, prevNode3 : integer) 
+    returns (n1 : integer, n2 : integer, n3 : integer){
+    havoc n1;
+    havoc n2;
+    havoc n3;
+    assume (valid_node(n1) && valid_node(n2) && valid_node(n3));
+    assume (n1 != n2 && n2 != n3 && n3 != n1);
+    assume (n1 != prevNode1 && n1 != prevNode2 && n1 != prevNode3);
+    assume (n2 != prevNode1 && n2 != prevNode2 && n2 != prevNode3);
+    assume (n3 != prevNode1 && n3 != prevNode2 && n3 != prevNode3);
+    }
+  var node1, node2, node3 : integer;
+  var prevNode1, prevNode2, prevNode3 : integer;
+  init {
+    assume (valid_node(node1) && valid_node(node2) && valid_node(node3));
+    assume (node1 != node2 && node2 != node3 && node3 != node1);
+  }
+
+  next {
+    call(node1', node2', node3') = next_nodes(node1, node2, node3);
+  }
+ // define invariants here
+  invariant a: false; 
+
+  // Proof script.
+  control {
+    // NOTE: You may want to set the unroll bound to a lower value while
+    // debugging your model.
+    v = unroll(8);
+    check;
+    print_results;
+    v.print_cex(node1,node2,node3);
+  }
+}
