@@ -1,40 +1,79 @@
 module main
 {
-  define valid_node(s : integer) : boolean =
+  define valid_router(s : integer) : boolean =
     (s >= 1 && s <= 10);
-  
-      
-  procedure next_nodes (prevNode1 : integer, prevNode2 : integer, prevNode3 : integer) 
-    returns (n1 : integer, n2 : integer, n3 : integer){
-    havoc n1;
-    havoc n2;
-    havoc n3;
-    assume (valid_node(n1) && valid_node(n2) && valid_node(n3));
-    assume (n1 != n2 && n2 != n3 && n3 != n1);
-    assume (n1 != prevNode1 && n1 != prevNode2 && n1 != prevNode3);
-    assume (n2 != prevNode1 && n2 != prevNode2 && n2 != prevNode3);
-    assume (n3 != prevNode1 && n3 != prevNode2 && n3 != prevNode3);
-    }
-  var node1, node2, node3 : integer;
-  var prevNode1, prevNode2, prevNode3 : integer;
-  init {
-    assume (valid_node(node1) && valid_node(node2) && valid_node(node3));
-    assume (node1 != node2 && node2 != node3 && node3 != node1);
+ 
+  define valid_stage(s : integer) : boolean =
+    (s >=1 && s <=3 );  
+
+  define valid_packet(dest1 : integer , dest2 : integer , dest3 : integer) : boolean =
+    (dest1 != dest2 && dest2 != dest3 && dest3 != dest1 && valid_router(dest1) && valid_router(dest2) && valid_router(dest3));   
+ //For each packet real destination is dest3
+  var p1d1,p1d2,p1d3,p2d1,p2d2,p2d3,p3d1,p3d2,p3d3,p4d1,p4d2,p4d3,p5d1,p5d2,p5d3 : integer; 
+  var counter : integer;
+  var p1stage,p2stage,p3stage,p4stage,p5stage : integer ; 
+
+  var p1location,p2location,p3location,p4location,p5location : integer ;
+  assume(valid_packet(p1d1,p1d2,p1d3) && valid_packet(p2d1,p2d2,p2d3) && valid_packet(p3d1,p3d2,p3d3) 
+         && valid_packet(p4d1,p4d2,p4d3) && valid_packet(p5d1,p5d2,p5d3) );
+  procedure next_location , packetnumber , counter : integer) 
+    returns (location , counter : integer) 
+  {
+      case
+	packetnumber = 1 : {if(counter==1) location = p1d2; 
+				if(counter==2) location = p1d3;   }
+ 
+	packetnumber = 2 : { if(counter==1) location = p2d2; 
+				if(counter==2) location = p2d3; } 
+
+   	packetnumber = 3 : { if(counter==1) location = p3d2; 
+				if(counter==2) location = p3d3; }
+
+	packetnumber = 4 : { if(counter==1) location = p4d2; 
+				if(counter==2) location = p4d3; }
+
+	packetnumber = 5 : { if(counter==1) location = p5d2; 
+				if(counter==2) location = p5d3;} 
+      esac 
+	counter = counter +1;
+	if(counter == 4)
+		counter = 1;   
+    
   }
 
+ 
+
+  var prevNode1, prevNode2, prevNode3 : integer;
+  init {
+        p1location = p1d1;
+   	p2location = p2d1;
+	p3location = p3d1;
+	p4location = p4d1;
+	p5location = p5d1;
+        counter = 1;    
+   }
+
   next {
-    call(node1', node2', node3') = next_nodes(node1, node2, node3);
+	(p1location' , counter' ) =  next_location(1,counter);
+        (p2location' , counter' ) =  next_location(2,counter);
+        (p3location' , counter' ) =  next_location(3,counter);
+        (p4location' , counter' ) =  next_location(4,counter);
+	(p5location' , counter' ) =  next_location(5,counter);
+	}
+      
+    
+    
   }
- // define invariants here
-  invariant a: false; 
+ //  invariants
+  invariant a : false;
 
   // Proof script.
   control {
     // NOTE: You may want to set the unroll bound to a lower value while
     // debugging your model.
-    v = unroll(8);
+    v = unroll(3);
     check;
     print_results;
-    v.print_cex(node1,node2,node3);
+   
   }
 }
