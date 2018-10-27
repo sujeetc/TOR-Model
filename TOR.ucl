@@ -1,18 +1,31 @@
+<<<<<<< HEAD
+=======
 // This is a sample edit.
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
 module main
 {
   type router_id_t = bv4;
   type stage_t = bv3;
   type packet_t = record {
+<<<<<<< HEAD
+    d1 : integer,
+    d2 : integer,
+    d3 : integer,
+=======
     d1 : router_id_t,
     d2 : router_id_t,
     d3 : router_id_t,
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
     stage : stage_t
   };
 
   define valid_router(s : router_id_t) : boolean =
     (s >= 1bv4 && s <= 10bv4);
+<<<<<<< HEAD
+
+=======
  
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
   define valid_stage(s : stage_t) : boolean =
     (s >= 1bv3 && s <= 3bv3);
 
@@ -23,6 +36,18 @@ module main
   const num_packets : integer = 4;
 
   procedure next_location(p : packet_t)
+<<<<<<< HEAD
+    returns (location : integer)
+  {
+    case
+      (p.stage == 1bv3) : {
+        location = p.d1;
+      }
+      (p.stage == 2bv3) : {
+        location = p.d2;
+      }
+      (p.stage == 3bv3) : {
+=======
     returns (location : router_id_t)
   {
     case
@@ -33,16 +58,25 @@ module main
         location = p.d2;
       }
       (p.stage == 2bv3) : {
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
         location = p.d3;
       }
     esac
   }
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
   procedure move_packets()
     modifies packets;
   {
     for (i : integer) in range(0, num_packets) {
+<<<<<<< HEAD
+      if ((packets[i]).stage <= 3bv3) {
+=======
       if ((packets[i]).stage < 3bv3) {
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
         var p : packet_t;
         p = packets[i];
         p.stage = p.stage + 1bv3;
@@ -50,15 +84,40 @@ module main
       }
     }
   }
+<<<<<<< HEAD
+  procedure check_destn_within_bound()
+    modifies packets;
+  {
+   	for(i : integer) in range(0 , num_packets){
+		var p : packet_t;
+		p = packets[i];
+          	assume (p.d1 >= 1 && p.d1 <= 10 );
+		assume (p.d2 >= 1 && p.d2 <= 10 );
+		assume (p.d3 >= 1 && p.d3 <= 10 );
+        }
+
+  }
+
+  init {
+    call check_destn_within_bound();
+    for (i : integer) in range(0, num_packets) {
+      var p : packet_t;
+      p = packets[i];
+=======
 
   init {
     for (i : integer) in range(0, num_packets) {
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
       assume valid_packet(packets[i]);
     }
   }
   next {
     call move_packets();
   }
+<<<<<<< HEAD
+  assume p : true;
+  invariant always_false: false;
+=======
 
   invariant always_false: false;
 
@@ -122,15 +181,21 @@ module main
 //  invariant a : false;
 //
 //  // Proof script.
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
   control {
     v = unroll(2);
     check;
     print_results;
     v.print_cex(
       (packets[0]).d1, (packets[0]).d2, (packets[0]).d3, (packets[0]).stage,
+<<<<<<< HEAD
+(packets[1]).d1, (packets[1]).d2, (packets[1]).d3, (packets[1]).stage,
+=======
       (packets[1]).d1, (packets[1]).d2, (packets[1]).d3, (packets[1]).stage,
+>>>>>>> 1c7df6017c99099ca68c064b3c98d17d60aeb928
       (packets[2]).d1, (packets[2]).d2, (packets[2]).d3, (packets[2]).stage,
       (packets[3]).d1, (packets[3]).d2, (packets[3]).d3, (packets[3]).stage
     );
   }
 }
+
