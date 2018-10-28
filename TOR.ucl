@@ -23,34 +23,36 @@ module main
   var packets : [integer]packet_t;
   const num_packets : integer = 4;
 
-  procedure next_location(p : packet_t)
+  procedure find_next_location(pin : packet_t)
+    returns (pout : packet_t)
     modifies packets;
   {
+    pout = pin;
     case
-      (p.stage == 1bv3) : {
-        p.previous_location = -1;
-	p.current_location = p.source;
-	p.next_location = p.d1;
+      (pin.stage == 1bv3) : {
+        pout.previous_location = -1;
+	pout.current_location = pin.source;
+	pout.next_location = pin.d1;
       }
-       (p.stage == 2bv3) : {
-        p.previous_location = p.source;
-	p.current_location = p.d1;
-	p.next_location = p.d2;
+       (pin.stage == 2bv3) : {
+        pout.previous_location = pin.source;
+	pout.current_location = pin.d1;
+	pout.next_location = pin.d2;
       }
-       (p.stage == 3bv3) : {
-        p.previous_location = p.d1;
-	p.current_location = p.d2;
-	p.next_location = p.d3;
+       (pin.stage == 3bv3) : {
+        pout.previous_location = pin.d1;
+	pout.current_location = pin.d2;
+	pout.next_location = pin.d3;
       }
-       (p.stage == 4bv3) : {
-        p.previous_location = p.d2;
-	p.current_location = p.d3;
-	p.next_location = p.destination;
+       (pin.stage == 4bv3) : {
+        pout.previous_location = pin.d2;
+	pout.current_location = pin.d3;
+	pout.next_location = pin.destination;
       }
-       (p.stage == 5bv3) : {
-        p.previous_location = p.d3;
-	p.current_location = p.destination;
-	p.next_location = -1;
+       (pin.stage == 5bv3) : {
+        pout.previous_location = pin.d3;
+	pout.current_location = pin.destination;
+	pout.next_location = -1;
       }
     
     esac
@@ -63,8 +65,7 @@ module main
         var p : packet_t;
         p = packets[i];
         p.stage = p.stage + 1bv3;
-	call next_location(p);
-        packets[i] = p;
+	call (packets[i]) = find_next_location(p);
       }
     }
   }
