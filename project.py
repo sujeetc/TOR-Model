@@ -2,53 +2,79 @@
 # I will try to mimic BGP using monosat
 import math
 from monosat import *
-def find_shortest_distance(attacker,node1 , node2 , l , r , g):
-    i = l
+attacker = Var()
+attacker_condition = Var()
+def find_shortest_distance(check,node1 , node2 , l , r , g):
+    i = 1
     while(1):
-        if (~attacker and Solve([g.distance_leq(node1,node2,i), ~e1 , ~e2 , ~e3 , ~e4 , ~e5 , ~e6 , ~e7 , ~e8])) or (attacker and Solve(g.distance_leq(node1,node2,i))):
-            return i
+        if check:
+            if ( Solve([g.distance_leq(node1,node2,i),attacker]) ):
+                return i
+            else:
+                i = i + 1
         else:
-            i = i + 1
+            if ( Solve([g.distance_leq(node1,node2,i),~attacker]) ):
+                return i
+            else:
+                i = i + 1
+            
 
-def find_shortest_distance_b(attacker,node1 , node2 , l , r ,g):
+
+
+def find_shortest_distance_b(check,node1 , node2 , l , r ,g):
     i = l
     count = 1
     while(1):
         if i < l or i > r:
-            return find_shortest_distance_b(attacker,node1 , node2 , l ,r , g)
-        if (~attacker and Solve([g.distance_leq(node1,node2,i), ~e1 , ~e2 , ~e3 , ~e4 , ~e5 , ~e6 , ~e7 , ~e8]) ) or (attacker and Solve([g.distance_leq(node1,node2,i)])):
-            if i+1 == r or i == 1:
+            return find_shortest_distance_b(check,node1 , node2 , l ,r , g)
+        if check:
+            if (Solve([g.distance_leq(node1,node2,i)]) ):
+                if i+1 == r or i == 1:
 
-                return i
+                    return i
+                else:
+                    return find_shortest_distance_b(check,node1 , node2 , math.ceil(l/2) + 1 , l , g)
             else:
-                return find_shortest_distance_b(attacker,node1 , node2 , math.ceil(l/2) + 1 , l , g)
+                count = count*2
+                i = i + count
         else:
-            count = count*2
-            i = i + count
-    
-def find_total_shortest_paths(attacker,node1 , node2 ,nodes,g):
-    distance = find_shortest_distance(attacker,node1 , node2 , 1, nodes-1 , g)
-    return find_total_paths(attacker,node1, node2, distance, nodes, g)
+            if (Solve([g.distance_leq(node1,node2,i),~attacker]) ):
+                if i+1 == r or i == 1:
 
-def find_total_paths(attacker,node1 , node2 , distance ,nodes,g):
+                    return i
+                else:
+                    return find_shortest_distance_b(check,node1 , node2 , math.ceil(l/2) + 1 , l , g)
+            else:
+                count = count*2
+                i = i + count
+    
+def find_total_shortest_paths(check,node1 , node2 ,nodes,g):
+    distance = find_shortest_distance(check,node1 , node2 , 1, nodes-1 , g)
+    return find_total_paths(check,node1, node2, distance, nodes, g)
+
+def find_total_paths(check,node1 , node2 , distance ,nodes,g):
     count = 0
-    if find_shortest_distance(attacker,node1 , node2 , 1, nodes-1,g) == 1:
+    if find_shortest_distance(check,node1 , node2 , 1, nodes-1,g) == 1:
         return 1
-    list1 = find_neighbours(attacker,node1 , 1,nodes, g)
+    list1 = find_neighbours(check,node1 , 1,nodes, g)
     list2 = list1.copy()
     for i in list1:
-        if find_shortest_distance(attacker,i,node2, 1 , nodes-1, g) != distance-1:
+        if find_shortest_distance(check,i,node2, 1 , nodes-1, g) != distance-1:
             list2.remove(i)
     list1 = list2.copy()
     for i in list1:
-        count = count + find_total_paths(attacker,i,node2,distance-1,nodes, g)
+        count = count + find_total_paths(check,i,node2,distance-1,nodes, g)
     return count
 
-def find_neighbours(attacker,node,distance,nodes,g):
+def find_neighbours(check,node,distance,nodes,g):
    neighbours = []
    for i in range(nodes):
-        if (~attacker and Solve([g.distance_lt(node,i,distance+1), ~g.distance_lt(node,i,distance), ~e1 , ~e2 , ~e3 , ~e4 , ~e5 , ~e6 , ~e7 , ~e8])) or (attacker and Solve(g.distance_lt(node,i,distance+1))):
-            neighbours.append(i)
+        if check:
+            if (Solve([g.distance_lt(node,i,distance+1), ~g.distance_lt(node,i,distance),attacker] )):
+                neighbours.append(i)
+        else:
+            if (Solve([g.distance_lt(node,i,distance+1),~g.distance_lt(node,i,distance),~attacker])):
+                neighbours.append(i)
    return neighbours
 
 
@@ -70,7 +96,9 @@ def print_shortest_distances(nodes,g,new):
                 print(a,b, end=' ')
                 print(find_total_shortest_paths(True,i,j,nodes+new,g),end=' ')
                 if a == b:
-                    print(find_total_shortest_paths(True,i,j,nodes+new,g) - find_total_shortest_paths(False,i,j,nodes,g), end=' ')
+                    x = find_total_shortest_paths(True,i,j,nodes+new,g)
+                    y = find_total_shortest_paths(False,i,j,nodes,g)
+                    print(x-y,end=' ')
                 else:
                     print(find_total_shortest_paths(True,i,j,nodes+new,g),end=' ')
             else:
@@ -115,9 +143,10 @@ e6 = g1.addEdge(n6,n5)
 e7 = g1.addEdge(n4,n6)
 e8 = g1.addEdge(n5,n6)
 
+attacker_condition =  And(Or(attacker,~e1),Or(attacker,~e2),Or(attacker,~e3),Or(attacker,~e4),Or(attacker,~e5),Or(attacker,~e6),Or(attacker,~e7),Or(attacker,~e8)) 
+
+Assert(attacker_condition)
 print_shortest_distances(6,g1,1)
-
-
 g3 = Graph()
 
 
